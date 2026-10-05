@@ -1,8 +1,10 @@
-# Production stack: `docker compose up -d --build`. See README.md.
+# Production stack: `docker compose up -d`. See README.md.
 
+# Pulls the published image (docker/publish.sh); pin a release with IMAGE_TAG. With a checkout of
+# the repository, `docker compose up -d --build` builds it locally instead.
 x-app: &app
+  image: ghcr.io/frs-projects/modsync-web:${IMAGE_TAG:-latest}
   build: .
-  image: modsync-web:${IMAGE_TAG:-latest}
   restart: unless-stopped
   environment: &app-env
     APP_NAME: ${APP_NAME:-ModSync}

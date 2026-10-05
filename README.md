@@ -52,14 +52,15 @@ who may publish what players install.
 ## Deploying with Docker Compose
 
 Requirements: Docker with Compose, and a reverse proxy that terminates TLS (Caddy, Traefik,
-nginx, …).
+nginx, …). The image is published as `ghcr.io/frs-projects/modsync-web`, so you only need
+[compose.yaml](compose.yaml):
 
 ```sh
-git clone https://github.com/frs-projects/modsync-web.git && cd modsync-web
-cp .env.example .env   # only used by compose for the variables below
+mkdir modsync && cd modsync
+curl -fsSLO https://raw.githubusercontent.com/frs-projects/modsync-web/main/compose.yaml
 ```
 
-Set these in `.env`:
+Create a `.env` next to it:
 
 ```sh
 APP_KEY=base64:...                       # docker run --rm php:8.4-cli php -r 'echo "base64:".base64_encode(random_bytes(32)), PHP_EOL;'
@@ -68,12 +69,13 @@ DB_PASSWORD=a-long-random-password
 TRUSTED_PROXIES=*                        # or your proxy's address
 MODSYNC_USER_AGENT="my-packs (admin@example.net)"   # Modrinth asks for contact details
 MODSYNC_CURSEFORGE_KEY=                  # optional, from console.curseforge.com
+IMAGE_TAG=latest                         # or a release, e.g. 1.0.0 or 1
 ```
 
 Then start the stack and create the first user:
 
 ```sh
-docker compose up -d --build
+docker compose up -d
 docker compose exec app php artisan make:filament-user
 ```
 
@@ -89,7 +91,8 @@ proxy at it. The stack runs:
 
 Uploaded files live in the `storage` volume, so back it up together with the database.
 
-To update, run `git pull && docker compose up -d --build`.
+To update, run `docker compose pull && docker compose up -d`. To build the image yourself
+instead, clone the repository and run `docker compose up -d --build`.
 
 ### Configuration
 
@@ -124,6 +127,17 @@ daily update check.
 ```sh
 vendor/bin/pest --compact              # tests (in-memory SQLite)
 vendor/bin/pint                        # formatting
+```
+
+### Publishing the image
+
+`docker/publish.sh` builds the image for amd64 and arm64 and pushes it to GHCR. It tags
+`:latest` and the short commit, and on a release tag (`v1.2.3`) also `:1.2.3`, `:1.2` and `:1`.
+The script header covers logging in, QEMU for the foreign platform, and `--dirty` builds.
+
+```sh
+git tag v1.0.0 && git push --tags
+docker/publish.sh
 ```
 
 ## License
