@@ -1,0 +1,85 @@
+# Production stack: `docker compose up -d --build`. See README.md.
+
+x-app: &app
+  build: .
+  image: modsync-web:${IMAGE_TAG:-latest}
+  restart: unless-stopped
+  environment: &app-env
+    APP_NAME: ${APP_NAME:-ModSync}
+    APP_ENV: production
+    APP_DEBUG: "false"
+    APP_KEY: ${APP_KEY:?APP_KEY is required}
+    APP_URL: ${APP_URL:?APP_URL is required}
+    TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+    LOG_CHANNEL: stderr
+    DB_CONNECTION: mariadb
+    DB_HOST: db
+    DB_DATABASE: modsync
+    DB_USERNAME: modsync
+    DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    CACHE_STORE: database
+    SESSION_DRIVER: database
+    SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE:-true}
+    QUEUE_CONNECTION: database
+    MODSYNC_CURSEFORGE_KEY: ${MODSYNC_CURSEFORGE_KEY:-}
+    MODSYNC_USER_AGENT: ${MODSYNC_USER_AGENT:-}
+    MODSYNC_MAX_UPLOAD_KB: ${MODSYNC_MAX_UPLOAD_KB:-262144}
+    TZ: ${TZ:-UTC}
+  volumes:
+    # Uploaded files (stored by hash) and Livewire's temporary uploads.
+    - storage:/app/storage/app
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  app:
+    <<: *app
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:80"
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: app
+
+  # Hashes CurseForge and URL downloads.
+  worker:
+    <<: *app
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: worker
+    # After app: it runs the migrations.
+    depends_on:
+      app:
+        condition: service_healthy
+
+  # The daily update check (modsync:check-updates).
+  scheduler:
+    <<: *app
+    environment:
+      <<: *app-env
+      CONTAINER_ROLE: scheduler
+    depends_on:
+      app:
+        condition: service_healthy
+
+  db:
+    image: mariadb:lts
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: modsync
+      MARIADB_USER: modsync
+      MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5m
+      start_interval: 5s
+
+volumes:
+  storage:
+  db:

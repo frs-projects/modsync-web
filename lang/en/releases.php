@@ -1,0 +1,36 @@
+<?php
+
+return [
+    'title' => 'Releases',
+    'version' => 'Version',
+    'version_help' => 'Shown to players when they sync.',
+    'game' => 'Game',
+    'files' => 'Files',
+    'published_by' => 'Published by',
+    'published_at' => 'Published',
+    'live' => 'Live',
+    'publish' => 'Publish release',
+    'publish_heading' => 'Publish :pack',
+    'publish_help' => 'Freezes the files below into a release. Players\' clients sync to it on their next join.',
+    'publish_blocked' => 'The files below cannot be released yet.',
+    'published' => ':version is live.',
+    'publish_failed' => 'Not published',
+    'make_live' => 'Make live',
+    'make_live_confirm' => 'Players\' clients sync back to :version on their next join. The files below are not changed.',
+    'made_live' => ':version is live.',
+    'view_manifest' => 'Manifest',
+    'no_live' => 'Nothing published yet.',
+    'empty' => 'No releases yet',
+    'empty_help' => 'Publish the files below to make them the pack\'s first release.',
+    'errors' => [
+        'empty' => 'The pack has no files.',
+        'version_taken' => 'There already is a release :version.',
+        'bad_path' => ':file: the client cannot write to this path.',
+        'not_hashed' => ':file: still being hashed. Try again in a minute.',
+        'hash_failed' => ':file: could not be hashed: :error',
+        'no_url' => ':file: has no download URL.',
+    ],
+    'warnings' => [
+        'untrusted_hosts' => 'Files download from :hosts, which the client only allows once a player adds it to approvedHosts in modsync.json.',
+    ],
+];

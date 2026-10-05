@@ -1,0 +1,10 @@
+{
+	frankenphp
+}
+
+# Plain HTTP: put a TLS-terminating reverse proxy in front and set TRUSTED_PROXIES.
+:80 {
+	root * /app/public
+	encode zstd br gzip
+	php_server
+}
