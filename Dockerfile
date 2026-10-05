@@ -11,7 +11,7 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-in
 FROM docker.io/dunglas/frankenphp:php8.4 AS app
 
 LABEL org.opencontainers.image.title="modsync-web"
-LABEL org.opencontainers.image.source https://github.com/frs-projects/modsync-web
+LABEL org.opencontainers.image.source="https://github.com/frs-projects/modsync-web"
 LABEL org.opencontainers.image.description="Publishes ModSync manifests"
 
 RUN install-php-extensions \
